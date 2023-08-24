@@ -29,7 +29,7 @@ jobs:
       run: dotnet tool install --global dotnet-sonarscanner
 
     - name: Start SonarCloud scanner
-      run: dotnet sonarscanner begin /k:"YOUR_PROJECT_KEY" /o:"YOUR_ORG_KEY" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+      run: dotnet sonarscanner begin /k:"AntonArtomovSS_ChatGptTest" /o:"antonartomovss" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
 
     - name: Build solution
       run: dotnet build --configuration Release --no-restore
