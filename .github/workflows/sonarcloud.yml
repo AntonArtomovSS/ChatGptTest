@@ -11,8 +11,7 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -23,10 +22,13 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.21 # Change this to your .NET version
+        dotnet-version: 6.0.21
 
     - name: Install SonarCloud scanner
       run: dotnet tool install --global dotnet-sonarscanner
+
+    - name: Add dotnet tools to PATH
+      run: echo "C:\Users\runneradmin\.dotnet\tools" >> $GITHUB_PATH
 
     - name: Start SonarCloud scanner
       run: dotnet sonarscanner begin /k:"AntonArtomovSS_ChatGptTest" /o:"antonartomovss" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
