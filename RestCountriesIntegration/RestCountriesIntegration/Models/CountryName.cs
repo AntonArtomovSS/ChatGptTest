@@ -1,6 +1,6 @@
 ﻿namespace RestCountriesIntegration.Models;
 
-public class Name
+public class CountryName
 {
     public string Common { get; init; }
 

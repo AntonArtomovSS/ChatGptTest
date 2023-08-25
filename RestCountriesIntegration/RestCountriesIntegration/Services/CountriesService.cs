@@ -24,7 +24,7 @@ public class CountriesService : ICountriesService
         _httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetAll()
+    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter)
     {
         var response = await _httpClient.GetAsync($"{RestCountiresRoute}/all");
 
@@ -34,6 +34,25 @@ public class CountriesService : ICountriesService
 
         var countries = JsonSerializer.Deserialize<IReadOnlyCollection<Country>>(jsonResponse, JsonSerializerOptions);
 
-        return countries ?? new List<Country>();
+        if (countries is null || !countries.Any())
+        {
+            return new List<Country>();
+        }
+
+        if (!string.IsNullOrWhiteSpace(nameFilter))
+        {
+            countries = FilterByName(countries, nameFilter);
+        }
+
+        return countries;
+    }
+
+    private static IReadOnlyCollection<Country> FilterByName(IReadOnlyCollection<Country> countries, string nameFilter)
+    {
+        return countries
+            .Where(country =>
+                country?.Name?.Common is not null
+                && country.Name.Common.Contains(nameFilter, StringComparison.InvariantCultureIgnoreCase))
+            .ToList();
     }
 }

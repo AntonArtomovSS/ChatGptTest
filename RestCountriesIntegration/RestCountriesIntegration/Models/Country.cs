@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Country
 {
-    public Name Name { get; init; }
+    public CountryName Name { get; init; }
 
     public IEnumerable<string> Tld { get; init; }
 
