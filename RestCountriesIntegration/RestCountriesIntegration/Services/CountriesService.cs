@@ -26,7 +26,7 @@ public class CountriesService : ICountriesService
         _httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter, int? populationInMillionsFilter, string? sortingDirection)
+    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter, int? populationInMillionsFilter, string? sortingDirection, int? pageSize)
     {
         var response = await _httpClient.GetAsync($"{RestCountiresRoute}/all");
 
@@ -56,11 +56,21 @@ public class CountriesService : ICountriesService
             countries = SortByName(countries, sortingDirection);
         }
 
+        if (pageSize.HasValue)
+        {
+            countries = ApplyPagination(countries, pageSize.Value);
+        }
+
         return countries.ToList();
     }
 
     private static IReadOnlyCollection<Country> FilterByName(IReadOnlyCollection<Country> countries, string nameFilter)
     {
+        if (countries is null)
+        {
+            throw new ArgumentNullException(nameof(countries));
+        }
+
         return countries
             .Where(country =>
                 country?.Name?.Common is not null
@@ -68,20 +78,47 @@ public class CountriesService : ICountriesService
             .ToList();
     }
 
-    public static IReadOnlyCollection<Country> FilterByPopulation(IReadOnlyCollection<Country> countries, int populationInMillionsFilter)
+    private static IReadOnlyCollection<Country> FilterByPopulation(IReadOnlyCollection<Country> countries, int populationInMillionsFilter)
     {
+        if (countries is null)
+        {
+            throw new ArgumentNullException(nameof(countries));
+        }
+
         return countries
             .Where(country => country.Population < populationInMillionsFilter * OneMillion)
             .ToList();
     }
 
-    public static IReadOnlyCollection<Country> SortByName(IReadOnlyCollection<Country> countries, string sortingDirection)
+    private static IReadOnlyCollection<Country> SortByName(IReadOnlyCollection<Country> countries, string sortingDirection)
     {
+        if (countries is null)
+        {
+            throw new ArgumentNullException(nameof(countries));
+        }
+
         return sortingDirection.Trim().ToLower() switch
         {
             "ascend" => countries.OrderBy(c => c.Name.Common).ToList(),
             "descend" => countries.OrderByDescending(c => c.Name.Common).ToList(),
-            _ => throw new ArgumentOutOfRangeException("Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
+            _ => throw new ArgumentOutOfRangeException(nameof(sortingDirection), "Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
         };
+    }
+
+    private static IReadOnlyCollection<Country> ApplyPagination(IReadOnlyCollection<Country> countries, int pageSize)
+    {
+        if (countries is null)
+        {
+            throw new ArgumentNullException(nameof(countries));
+        }
+
+        if (pageSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size should be greater than 0.");
+        }
+
+        return countries
+            .Take(pageSize)
+            .ToList();
     }
 }

@@ -1,0 +1,55 @@
+User
+Using C#10 create a ApplyPagination method which accepts a list of Countries 'countries' and an int 'pageSize' as parameters and returns first pageSize amount of records from countries
+ChatGPT
+Certainly! Below is a simple implementation of the ApplyPagination method in C# 10 that accepts a list of countries and a pageSize to return the first pageSize amount of records from the list:
+
+csharp
+Copy code
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Country
+{
+    public string Name { get; set; }
+    // ... any other properties related to the Country class ...
+}
+
+public class PaginationHelper
+{
+    public static List<Country> ApplyPagination(List<Country> countries, int pageSize)
+    {
+        if (countries is null) throw new ArgumentNullException(nameof(countries));
+        if (pageSize <= 0) throw new ArgumentException("Page size should be greater than 0.", nameof(pageSize));
+
+        return countries.Take(pageSize).ToList();
+    }
+}
+
+// Sample usage:
+public class Program
+{
+    public static void Main()
+    {
+        var countries = new List<Country>
+        {
+            new Country { Name = "USA" },
+            new Country { Name = "Canada" },
+            new Country { Name = "UK" },
+            // ... other countries ...
+        };
+
+        var result = PaginationHelper.ApplyPagination(countries, 2);
+
+        foreach (var country in result)
+        {
+            Console.WriteLine(country.Name);
+        }
+    }
+}
+In this example, the ApplyPagination method makes use of the Take extension method provided by LINQ to get the first pageSize number of records from the countries list. If you call ApplyPagination with a pageSize of 2 and the example list of countries, it will output:
+
+Copy code
+USA
+Canada
+Note that this example assumes a simple Country class with a Name property. You can expand upon the Country class as per your requirements.
