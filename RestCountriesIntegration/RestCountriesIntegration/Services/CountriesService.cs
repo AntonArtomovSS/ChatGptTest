@@ -7,7 +7,6 @@ namespace RestCountriesIntegration.Services;
 public class CountriesService : ICountriesService
 {
     private const string RestCountiresRoute = "https://restcountries.com/v3.1/";
-    private const int OneMillion = 1_000_000;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions;
 
@@ -32,93 +31,47 @@ public class CountriesService : ICountriesService
 
         response.EnsureSuccessStatusCode();
 
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        var countries = JsonSerializer.Deserialize<IReadOnlyCollection<Country>>(jsonResponse, JsonSerializerOptions);
-
-        if (countries is null || !countries.Any())
-        {
-            return new List<Country>();
-        }
+        CountriesCollection countries = await GetCountriesFromResponse(response);
 
         if (!string.IsNullOrWhiteSpace(nameFilter))
         {
-            countries = FilterByName(countries, nameFilter);
+            countries.FilterByName(nameFilter);
         }
 
         if (populationInMillionsFilter.HasValue)
         {
-            countries = FilterByPopulation(countries, populationInMillionsFilter.Value);
+            countries.FilterByPopulation(populationInMillionsFilter.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(sortingDirection))
         {
-            countries = SortByName(countries, sortingDirection);
+            countries.SortByName(sortingDirection);
         }
 
         if (pageSize.HasValue)
         {
-            countries = ApplyPagination(countries, pageSize.Value);
+            countries.ApplyPagination(pageSize.Value);
         }
 
-        return countries.ToList();
+        return countries;
     }
 
-    private static IReadOnlyCollection<Country> FilterByName(IReadOnlyCollection<Country> countries, string nameFilter)
+    private static async Task<CountriesCollection> GetCountriesFromResponse(HttpResponseMessage response)
     {
-        if (countries is null)
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(jsonResponse))
         {
-            throw new ArgumentNullException(nameof(countries));
+            return new CountriesCollection();
         }
 
-        return countries
-            .Where(country =>
-                country?.Name?.Common is not null
-                && country.Name.Common.Contains(nameFilter, StringComparison.InvariantCultureIgnoreCase))
-            .ToList();
-    }
+        IEnumerable<Country> countries = JsonSerializer.Deserialize<IEnumerable<Country>>(jsonResponse, JsonSerializerOptions);
 
-    private static IReadOnlyCollection<Country> FilterByPopulation(IReadOnlyCollection<Country> countries, int populationInMillionsFilter)
-    {
-        if (countries is null)
+        if (countries is null || !countries.Any())
         {
-            throw new ArgumentNullException(nameof(countries));
+            return new CountriesCollection();
         }
 
-        return countries
-            .Where(country => country.Population < populationInMillionsFilter * OneMillion)
-            .ToList();
-    }
-
-    private static IReadOnlyCollection<Country> SortByName(IReadOnlyCollection<Country> countries, string sortingDirection)
-    {
-        if (countries is null)
-        {
-            throw new ArgumentNullException(nameof(countries));
-        }
-
-        return sortingDirection.Trim().ToLower() switch
-        {
-            "ascend" => countries.OrderBy(c => c.Name.Common).ToList(),
-            "descend" => countries.OrderByDescending(c => c.Name.Common).ToList(),
-            _ => throw new ArgumentOutOfRangeException(nameof(sortingDirection), "Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
-        };
-    }
-
-    private static IReadOnlyCollection<Country> ApplyPagination(IReadOnlyCollection<Country> countries, int pageSize)
-    {
-        if (countries is null)
-        {
-            throw new ArgumentNullException(nameof(countries));
-        }
-
-        if (pageSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size should be greater than 0.");
-        }
-
-        return countries
-            .Take(pageSize)
-            .ToList();
+        return new CountriesCollection(countries);
     }
 }
