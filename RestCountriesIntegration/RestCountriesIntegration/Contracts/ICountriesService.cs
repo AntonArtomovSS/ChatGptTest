@@ -1,6 +1,8 @@
-﻿namespace RestCountriesIntegration.Contracts;
+﻿using RestCountriesIntegration.Models;
+
+namespace RestCountriesIntegration.Contracts;
 
 public interface ICountriesService
 {
-    Task<IReadOnlyCollection<object>> GetAll();
+    Task<IReadOnlyCollection<Country>> GetAll();
 }
