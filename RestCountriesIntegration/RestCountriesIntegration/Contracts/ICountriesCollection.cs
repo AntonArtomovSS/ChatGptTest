@@ -4,11 +4,11 @@ namespace RestCountriesIntegration.Contracts;
 
 public interface ICountriesCollection : IReadOnlyCollection<Country>
 {
-    void FilterByName(string nameFilter);
+    CountriesCollection FilterByName(string nameFilter);
 
-    void FilterByPopulation(int populationInMillionsFilter);
+    CountriesCollection FilterByPopulation(int minPopulationInMillions);
 
-    void SortByName(string sortingDirection);
+    CountriesCollection SortByName(string sortingDirection);
 
-    void ApplyPagination(int pageSize);
+    CountriesCollection ApplyPagination(int pageSize);
 }

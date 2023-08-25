@@ -35,22 +35,22 @@ public class CountriesService : ICountriesService
 
         if (!string.IsNullOrWhiteSpace(nameFilter))
         {
-            countries.FilterByName(nameFilter);
+            countries = countries.FilterByName(nameFilter);
         }
 
         if (populationInMillionsFilter.HasValue)
         {
-            countries.FilterByPopulation(populationInMillionsFilter.Value);
+            countries = countries.FilterByPopulation(populationInMillionsFilter.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(sortingDirection))
         {
-            countries.SortByName(sortingDirection);
+            countries = countries.SortByName(sortingDirection);
         }
 
         if (pageSize.HasValue)
         {
-            countries.ApplyPagination(pageSize.Value);
+            countries = countries.ApplyPagination(pageSize.Value);
         }
 
         return countries;

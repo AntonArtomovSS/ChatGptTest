@@ -7,7 +7,7 @@ public class CountriesCollection : ICountriesCollection
 {
     private const int OneMillion = 1_000_000;
 
-    private List<Country> _countries;
+    private readonly List<Country> _countries;
 
     public CountriesCollection()
     {
@@ -25,41 +25,47 @@ public class CountriesCollection : ICountriesCollection
 
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-    public void FilterByName(string nameFilter)
+    public CountriesCollection FilterByName(string nameFilter)
     {
-        _countries = _countries
+        var filteredCountries = _countries
             .Where(country =>
                 country?.Name?.Common is not null
-                && country.Name.Common.Contains(nameFilter, StringComparison.InvariantCultureIgnoreCase))
-            .ToList();
+                && country.Name.Common.Contains(nameFilter, StringComparison.InvariantCultureIgnoreCase));
+
+        return new CountriesCollection(filteredCountries);
     }
 
-    public void FilterByPopulation(int populationInMillionsFilter)
+    public CountriesCollection FilterByPopulation(int minPopulationInMillions)
     {
-        _countries = _countries
-            .Where(country => country.Population < populationInMillionsFilter * OneMillion)
-            .ToList();
+        var filteredCountries = _countries
+            .Where(country => country.Population < minPopulationInMillions * OneMillion);
+
+        return new CountriesCollection(filteredCountries);
     }
 
-    public void SortByName(string sortingDirection)
+    public CountriesCollection SortByName(string sortingDirection)
     {
-        _countries = sortingDirection.Trim().ToLower() switch
+        var sortedCountries = sortingDirection.Trim().ToLower() switch
         {
-            "ascend" => _countries.OrderBy(c => c.Name.Common).ToList(),
-            "descend" => _countries.OrderByDescending(c => c.Name.Common).ToList(),
+            "ascend" => _countries.OrderBy(c => c.Name.Common),
+            "descend" => _countries.OrderByDescending(c => c.Name.Common),
             _ => throw new ArgumentOutOfRangeException(nameof(sortingDirection), "Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
         };
+
+        return new CountriesCollection(sortedCountries);
     }
 
-    public void ApplyPagination(int pageSize)
+    public CountriesCollection ApplyPagination(int pageSize)
     {
         if (pageSize <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size should be greater than 0.");
         }
 
-        _countries = _countries
+        var paginatedCountries = _countries
             .Take(pageSize)
             .ToList();
+
+        return new CountriesCollection(paginatedCountries);
     }
 }
