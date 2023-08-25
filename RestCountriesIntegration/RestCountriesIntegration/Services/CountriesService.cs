@@ -7,6 +7,8 @@ namespace RestCountriesIntegration.Services;
 public class CountriesService : ICountriesService
 {
     private const string RestCountiresRoute = "https://restcountries.com/v3.1/";
+    private const int OneMillion = 1_000_000;
+
     private static readonly JsonSerializerOptions JsonSerializerOptions;
 
     private readonly HttpClient _httpClient;
@@ -24,7 +26,7 @@ public class CountriesService : ICountriesService
         _httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter)
+    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter, int? populationInMillionsFilter)
     {
         var response = await _httpClient.GetAsync($"{RestCountiresRoute}/all");
 
@@ -44,7 +46,12 @@ public class CountriesService : ICountriesService
             countries = FilterByName(countries, nameFilter);
         }
 
-        return countries;
+        if (populationInMillionsFilter.HasValue)
+        {
+            countries = FilterByPopulation(countries, populationInMillionsFilter.Value);
+        }
+
+        return countries.ToList();
     }
 
     private static IReadOnlyCollection<Country> FilterByName(IReadOnlyCollection<Country> countries, string nameFilter)
@@ -53,6 +60,13 @@ public class CountriesService : ICountriesService
             .Where(country =>
                 country?.Name?.Common is not null
                 && country.Name.Common.Contains(nameFilter, StringComparison.InvariantCultureIgnoreCase))
+            .ToList();
+    }
+
+    public static IReadOnlyCollection<Country> FilterByPopulation(IReadOnlyCollection<Country> countries, int populationInMillionsFilter)
+    {
+        return countries
+            .Where(country => country.Population < populationInMillionsFilter * OneMillion)
             .ToList();
     }
 }

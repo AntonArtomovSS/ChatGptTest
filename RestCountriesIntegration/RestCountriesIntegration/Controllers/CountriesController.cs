@@ -15,9 +15,9 @@ public class CountriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCountries(string? nameFilter, string? param2, string? param3, int? intParam)
+    public async Task<IActionResult> GetCountries(string? nameFilter, int? populationInMillionsFilter, string? param2, string? param3)
     {
-        var countries = await _countriesService.GetAll(nameFilter);
+        var countries = await _countriesService.GetAll(nameFilter, populationInMillionsFilter);
 
         return Ok(countries);
     }
