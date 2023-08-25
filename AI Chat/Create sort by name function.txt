@@ -1,0 +1,131 @@
+User
+We're using c#10 we have a class Country with property Name of type CountryName. CountryName has property Common of type string.
+Create a SortByName method that accepts a list of Country objects 'countries' and a string 'sortingDirection' as  parameters. sortingDirection should only have one of two values: "ascend" or "descend". The method should return list of countries sorted by Country.Name.Common either descending or ascending (depending on the sortingDirection). 
+ChatGPT
+Certainly! Below is a method called SortByName that fulfills your requirements:
+
+csharp
+Copy code
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class CountryName
+{
+    public string Common { get; set; }
+}
+
+public class Country
+{
+    public CountryName Name { get; set; }
+}
+
+public static class CountrySorter
+{
+    public static List<Country> SortByName(List<Country> countries, string sortingDirection)
+    {
+        if (sortingDirection.Equals("ascend", StringComparison.OrdinalIgnoreCase))
+        {
+            return countries.OrderBy(c => c.Name.Common).ToList();
+        }
+        else if (sortingDirection.Equals("descend", StringComparison.OrdinalIgnoreCase))
+        {
+            return countries.OrderByDescending(c => c.Name.Common).ToList();
+        }
+        else
+        {
+            throw new ArgumentException("Invalid sorting direction. Only 'ascend' or 'descend' are allowed.");
+        }
+    }
+}
+
+// Usage example:
+// var countries = new List<Country> { ... };
+// var sortedCountriesAsc = CountrySorter.SortByName(countries, "ascend");
+// var sortedCountriesDesc = CountrySorter.SortByName(countries, "descend");
+This code snippet provides the Country and CountryName classes as described. The static class CountrySorter contains the SortByName method, which takes a list of Country objects and a string indicating the sort direction. Depending on the sort direction, the method either sorts the list in ascending or descending order based on the Common property of the CountryName property of the Country objects. If an invalid sort direction is provided, an exception is thrown.
+
+
+
+
+User
+Please avoid using a bunch of if/else statements 
+ChatGPT
+Sure! You can use a ternary operator along with LINQ's OrderBy and ThenBy for a more concise implementation:
+
+csharp
+Copy code
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class CountryName
+{
+    public string Common { get; set; }
+}
+
+public class Country
+{
+    public CountryName Name { get; set; }
+}
+
+public static class CountrySorter
+{
+    public static List<Country> SortByName(List<Country> countries, string sortingDirection)
+    {
+        var isAscend = sortingDirection.Equals("ascend", StringComparison.OrdinalIgnoreCase);
+        
+        return isAscend 
+            ? countries.OrderBy(c => c.Name.Common).ToList() 
+            : countries.OrderByDescending(c => c.Name.Common).ToList();
+    }
+}
+
+// Usage example:
+// var countries = new List<Country> { ... };
+// var sortedCountriesAsc = CountrySorter.SortByName(countries, "ascend");
+// var sortedCountriesDesc = CountrySorter.SortByName(countries, "descend");
+Here, the ternary operator is used to determine if the sorting direction is "ascend" and sort accordingly. If it's not "ascend", then by default, it sorts in the descending direction.
+
+
+
+
+User
+Include handling of the invalid cases
+ChatGPT
+To handle invalid cases, we can leverage exception handling. Instead of multiple if/else statements, I'm going to use a combination of a ternary operator and a switch expression to make it more concise.
+
+csharp
+Copy code
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class CountryName
+{
+    public string Common { get; set; }
+}
+
+public class Country
+{
+    public CountryName Name { get; set; }
+}
+
+public static class CountrySorter
+{
+    public static List<Country> SortByName(List<Country> countries, string sortingDirection)
+    {
+        return sortingDirection.ToLower() switch
+        {
+            "ascend" => countries.OrderBy(c => c.Name.Common).ToList(),
+            "descend" => countries.OrderByDescending(c => c.Name.Common).ToList(),
+            _ => throw new ArgumentException("Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
+        };
+    }
+}
+
+// Usage example:
+// var countries = new List<Country> { ... };
+// var sortedCountriesAsc = CountrySorter.SortByName(countries, "ascend");
+// var sortedCountriesDesc = CountrySorter.SortByName(countries, "descend");
+In this code, the switch expression is used to handle the different sortingDirection values, and it throws an exception for any other values.

@@ -26,7 +26,7 @@ public class CountriesService : ICountriesService
         _httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter, int? populationInMillionsFilter)
+    public async Task<IReadOnlyCollection<Country>> GetAll(string? nameFilter, int? populationInMillionsFilter, string? sortingDirection)
     {
         var response = await _httpClient.GetAsync($"{RestCountiresRoute}/all");
 
@@ -51,6 +51,11 @@ public class CountriesService : ICountriesService
             countries = FilterByPopulation(countries, populationInMillionsFilter.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(sortingDirection))
+        {
+            countries = SortByName(countries, sortingDirection);
+        }
+
         return countries.ToList();
     }
 
@@ -68,5 +73,15 @@ public class CountriesService : ICountriesService
         return countries
             .Where(country => country.Population < populationInMillionsFilter * OneMillion)
             .ToList();
+    }
+
+    public static IReadOnlyCollection<Country> SortByName(IReadOnlyCollection<Country> countries, string sortingDirection)
+    {
+        return sortingDirection.Trim().ToLower() switch
+        {
+            "ascend" => countries.OrderBy(c => c.Name.Common).ToList(),
+            "descend" => countries.OrderByDescending(c => c.Name.Common).ToList(),
+            _ => throw new ArgumentOutOfRangeException("Invalid sorting direction. Only 'ascend' or 'descend' are allowed.")
+        };
     }
 }
